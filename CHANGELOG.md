@@ -1,67 +1,67 @@
-# Changelog
+# Registro de cambios (Changelog)
 
-All notable changes to this project are documented here.
+Todos los cambios notables en este proyecto se documentan aquí.
 
 ---
 
 ## [1.0.0] — 2025-05
 
-### Added
+### Agregado
 
 **Backend (Spring Boot 3.5)**
-- Full REST API with 11 controllers: products, suppliers, prices, purchase orders, stock movements, users, auth, dashboard
-- JWT authentication stored in `HttpOnly` cookies — not accessible from JavaScript
-- Role-based access control with `@PreAuthorize`: `ADMIN`, `GERENTE`, `ALMACENISTA`
-- Complete purchase order lifecycle: `BORRADOR → ENVIADA → RECIBIDA_PARCIAL → RECIBIDA / CANCELADA`
-- Stock auto-update on order reception with audit trail (`MovimientoInventario`)
-- `GET /api/dashboard/resumen` — aggregated KPIs computed server-side to avoid pagination-dependent client calculations
-- `GET /api/precios/ultimo` — last known price per supplier-product pair, used to prefill order forms
-- `GET /api/auth/session` — session revalidation endpoint used on app startup to sync `localStorage` state with live cookie
-- Configurable timezone via `APP_TIME_ZONE` env var (default `America/Bogota`) for date-range filters
-- Email notifications via Thymeleaf templates: welcome email, low-stock alert, order dispatched
-- Swagger UI via Springdoc OpenAPI at `/swagger-ui.html`
-- 24 unit and integration tests (JUnit 5)
+- API REST completa con 11 controladores: productos, proveedores, precios, órdenes de compra, movimientos de inventario, usuarios, autenticación, panel de control (dashboard).
+- Autenticación JWT almacenada en cookies `HttpOnly` — no accesible desde JavaScript.
+- Control de acceso basado en roles con `@PreAuthorize`: `ADMIN`, `GERENTE`, `ALMACENISTA`.
+- Ciclo de vida completo de órdenes de compra: `BORRADOR → ENVIADA → RECIBIDA_PARCIAL → RECIBIDA / CANCELADA`.
+- Actualización automática de inventario al recibir órdenes con registro de auditoría (`MovimientoInventario`).
+- `GET /api/dashboard/resumen` — KPIs agregados calculados en el servidor para evitar cálculos en el cliente dependientes de la paginación.
+- `GET /api/precios/ultimo` — último precio conocido por par proveedor-producto, utilizado para autocompletar formularios de órdenes.
+- `GET /api/auth/session` — endpoint de revalidación de sesión utilizado al iniciar la aplicación para sincronizar el estado de `localStorage` con la cookie activa.
+- Zona horaria configurable mediante la variable de entorno `APP_TIME_ZONE` (por defecto `America/Bogota`) para filtros de rango de fechas.
+- Notificaciones por correo electrónico mediante plantillas Thymeleaf: correo de bienvenida, alerta de stock bajo, orden despachada.
+- Swagger UI a través de Springdoc OpenAPI en `/swagger-ui.html`.
+- 24 pruebas unitarias y de integración (JUnit 5).
 
-**Security hardening**
-- JWT secret validated at startup: rejects values under 32 characters or known placeholder strings
-- Pessimistic locking (`PESSIMISTIC_WRITE`) on order state transitions to prevent race conditions
-- `GlobalExceptionHandler` returns generic messages to clients, logs full stack server-side
-- `@Transactional` on all write operations in service layer
-- `AuthService.create()` no longer sends plain-text passwords in welcome emails
-- Configurable `SameSite` cookie policy (`Strict` for same-origin, `None` for cross-origin + HTTPS)
-- `errorInterceptor` differentiates `401` (expired session) from `403` (insufficient permissions) — no longer signs the user out on permission errors
+**Reforzamiento de Seguridad**
+- Secreto JWT validado al inicio: rechaza valores menores a 32 caracteres o cadenas de texto de prueba conocidas.
+- Bloqueo pesimista (`PESSIMISTIC_WRITE`) en transiciones de estado de órdenes para prevenir condiciones de carrera (race conditions).
+- `GlobalExceptionHandler` devuelve mensajes genéricos a los clientes, registra el stack trace completo en el servidor.
+- `@Transactional` en todas las operaciones de escritura en la capa de servicios.
+- `AuthService.create()` ya no envía contraseñas en texto plano en los correos de bienvenida.
+- Política de cookies `SameSite` configurable (`Strict` para mismo origen, `None` para origen cruzado + HTTPS).
+- `errorInterceptor` diferencia `401` (sesión expirada) de `403` (permisos insuficientes) — ya no cierra la sesión del usuario por errores de permisos.
 
 **Frontend (Angular 17)**
-- Standalone components with lazy-loaded feature routes
-- Angular Material design system with custom CSS tokens for Dark / Light mode toggle
-- Dashboard with real-time KPIs, Chart.js movement distribution graph, top-activity products, low-stock list, and recent activity feed
-- Reactive forms for all CRUD operations
-- `APP_INITIALIZER` that revalidates the session via `/auth/session` before the router activates — prevents stale `localStorage` from letting unauthenticated users through
-- Global keyboard shortcuts (`?` for help, `g d/p/m/s/r/o/u` for navigation, `Esc` to close dialogs)
-- Skeleton loaders during data fetches
-- Fully responsive layout (360 px → 1920 px)
-- Accessibility: skip links, visible focus rings, `prefers-reduced-motion` support
-- Navigation items hidden per role (e.g. suppliers and prices hidden for `ALMACENISTA`)
+- Componentes independientes (standalone) con rutas de características cargadas perezosamente (lazy-loaded).
+- Sistema de diseño Angular Material con tokens CSS personalizados para alternar entre modo oscuro y claro.
+- Panel de control (Dashboard) con KPIs en tiempo real, gráfico de distribución de movimientos en Chart.js, productos con mayor actividad, lista de stock bajo y feed de actividad reciente.
+- Formularios reactivos para todas las operaciones CRUD.
+- `APP_INITIALIZER` que revalida la sesión mediante `/auth/session` antes de que el router se active — evita que datos obsoletos en `localStorage` permitan el paso a usuarios no autenticados.
+- Atajos de teclado globales (`?` para ayuda, `g d/p/m/s/r/o/u` para navegación, `Esc` para cerrar diálogos).
+- Carga de esqueletos (Skeleton loaders) durante la obtención de datos.
+- Diseño completamente responsivo (360 px → 1920 px).
+- Accesibilidad: enlaces de salto (skip links), anillos de foco visibles, soporte para `prefers-reduced-motion`.
+- Elementos de navegación ocultos según el rol (ej. proveedores y precios ocultos para `ALMACENISTA`).
 
-**Infrastructure**
-- Docker Compose for local MySQL 8 database
-- GitHub Actions CI: backend build + tests on every PR, frontend build check on every PR
-- `.env.example` with all required and optional environment variables documented
+**Infraestructura**
+- Docker Compose para base de datos MySQL 8 local.
+- GitHub Actions CI: comprobación de compilación + pruebas del backend en cada PR, comprobación de compilación del frontend en cada PR.
+- `.env.example` con todas las variables de entorno requeridas y opcionales documentadas.
 
-### Fixed
+### Solucionado
 
-- Cascade-to-login bug caused by `localStorage` / `HttpOnly` cookie desync on backend restart
-- Dashboard 401 cascade: `AuthService.logout()` is now idempotent; `errorInterceptor` skips logout for `/auth/login` and `/auth/logout` requests
-- Stock adjustments now reject zero-quantity changes and changes that would leave stock negative
-- Product `update()` no longer silently modifies the `active` flag — only `create()` sets it
-- Inactive products and suppliers are excluded from all operational listings and rejected in new operations
-- Order form `unknown` TypeScript payload replaced with explicit `OrdenRequest` / `DetalleOrdenRequest` types
+- Error de cascada de inicio de sesión causado por desincronización entre `localStorage` y cookie `HttpOnly` al reiniciar el backend.
+- Cascada 401 en el panel de control: `AuthService.logout()` ahora es idempotente; `errorInterceptor` omite el cierre de sesión para solicitudes a `/auth/login` y `/auth/logout`.
+- Los ajustes de inventario ahora rechazan cambios de cantidad cero y cambios que dejarían el stock negativo.
+- La función `update()` de producto ya no modifica silenciosamente el estado `active` — solo `create()` lo establece.
+- Los productos y proveedores inactivos son excluidos de todas las listas operacionales y rechazados en nuevas operaciones.
+- El payload TypeScript `unknown` de los formularios de órdenes se reemplazó por los tipos explícitos `OrdenRequest` / `DetalleOrdenRequest`.
 
 ---
 
-## Legend
+## Leyenda
 
-- **Added** — new features
-- **Fixed** — bug fixes
-- **Changed** — changes to existing behavior
-- **Removed** — removed features
+- **Agregado** (Added) — nuevas funcionalidades
+- **Solucionado** (Fixed) — corrección de errores
+- **Modificado** (Changed) — cambios en el comportamiento existente
+- **Eliminado** (Removed) — funcionalidades eliminadas
